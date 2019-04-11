@@ -20,7 +20,10 @@
 package logasync
 
 import (
+	"fmt"
+	"os"
 	"runtime"
+	"strings"
 	"sync"
 
 	"github.com/UtopicSoftware/logging"
@@ -35,6 +38,11 @@ type loggerFactory struct {
 	isClosed bool
 }
 
+// NewFactoryDefault creates asyncronous logging factory with defaultParameters
+func NewFactoryDefault() (logging.Factory, error) {
+	return NewFactory(DefaultConfig)
+}
+
 // NewFactory creates asyncronous logging factory
 func NewFactory(config ConfigProvider) (logging.Factory, error) {
 	cfg := Config{}
@@ -45,21 +53,23 @@ func NewFactory(config ConfigProvider) (logging.Factory, error) {
 	}
 	go func() {
 		for msg := range f.ch {
-			cfg.Writer.Write(msg.format(&cfg))
+			if _, err := cfg.Writer.Write(msg.format(&cfg)); err != nil {
+				fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+			}
 			f.wg.Done()
 		}
 	}()
 	return f, nil
 }
 
-func (f *loggerFactory) Logger(name string) logging.Logger {
+func (f *loggerFactory) NewLogger(name ...string) (logging.Logger, error) {
 	if err := f.errorIfClosed("LoggerFactory is closed"); err != nil {
-		panic(err)
+		return nil, err
 	}
-	return &logger{
-		name:    name,
+	return logging.NewLogger(&logger{
+		name:    strings.Join(name, f.cfg.NamingDelimiter),
 		factory: f,
-	}
+	}, nil)
 }
 
 func (f *loggerFactory) Close() error {
@@ -72,15 +82,15 @@ func (f *loggerFactory) Close() error {
 	return nil
 }
 
-func (f *loggerFactory) accept(msg *loggerMessage) {
+func (f *loggerFactory) accept(msg *loggerMessage, skip int) {
 	if f.cfg.Level < msg.level {
 		return
 	}
 	if err := f.errorIfClosed("LoggerFactory is closed"); err != nil {
-		panic(err)
+		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 	}
 	if f.cfg.Flags&SourceLine != 0 {
-		var _, file, line, ok = runtime.Caller(2)
+		var _, file, line, ok = runtime.Caller(skip)
 		if ok {
 			msg.file = &file
 			msg.line = line

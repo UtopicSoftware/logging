@@ -37,24 +37,25 @@ const (
 
 // Config contains settings for logger factory
 type Config struct {
-	QueueSize     int
-	Writer        io.Writer
-	NamingPattern string
-	OutPattern    string
-	TimePattern   string
-	Level         logging.Level
-	Flags         Flags
+	QueueSize       int
+	Writer          io.Writer
+	NamingDelimiter string
+	OutPattern      string
+	TimePattern     string
+	Level           logging.Level
+	Flags           Flags
 }
 
 // ConfigProvider provides configuration for logger factory
-type ConfigProvider func(cfg *Config)
+type ConfigProvider func(cfg *Config) *Config
 
 // DefaultConfig is a default configuration provider for logger factory
-func DefaultConfig(cfg *Config) {
+func DefaultConfig(cfg *Config) *Config {
 	cfg.QueueSize = 64
-	cfg.NamingPattern = "%v:%v"
-	cfg.OutPattern = "[%[1]v] %[3]v %[2]v: %[4]v\n"
-	cfg.TimePattern = "2006-01-02 15:04:05.9999"
+	cfg.NamingDelimiter = "."
+	cfg.OutPattern = "[%[1]v] %[3]v %[2]v: %[4]v"
+	cfg.TimePattern = "2006-01-02 15:04:05.000000-07:00"
 	cfg.Writer = os.Stdout
 	cfg.Level = logging.INFO
+	return cfg
 }

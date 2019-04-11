@@ -21,19 +21,25 @@ package logging
 
 import (
 	"fmt"
+	"io"
 )
 
 // Logger is a common logging API definition
 type Logger interface {
-	Trace(arg ...interface{})
-	Tracef(pattern string, arg ...interface{})
-	Logger(name string) Logger
+	Log(level Level, arg ...interface{})
+	Logf(level Level, pattern string, arg ...interface{})
+	LoggerProvider
+}
+
+// LoggerProvider can create Logger objects
+type LoggerProvider interface {
+	NewLogger(name ...string) (Logger, error)
 }
 
 // Factory is a basic logger constructor
 type Factory interface {
-	Logger(name string) Logger
-	Close() error
+	LoggerProvider
+	io.Closer
 }
 
 // Level represents logs output threshold
@@ -48,6 +54,8 @@ const (
 	INFO
 	DEBUG
 	TRACE
+	TRACEE
+	TRACEEE
 	ALL = ^Level(0)
 )
 
@@ -67,9 +75,46 @@ func (l Level) String() string {
 		return "DEBUG"
 	case TRACE:
 		return "TRACE"
+	case TRACEE:
+		return "TRACEE"
+	case TRACEEE:
+		return "TRACEEE"
 	case ALL:
 		return "ALL"
 	default:
 		return fmt.Sprintf("UNKNOWN_LEVEL_%d", l)
 	}
+}
+
+type logger struct {
+	logger Logger
+}
+
+func (l *logger) Log(level Level, arg ...interface{}) {
+	l.logger.Log(level, arg...)
+}
+
+func (l *logger) Logf(level Level, pattern string, arg ...interface{}) {
+	l.logger.Logf(level, pattern, arg...)
+}
+
+func (l *logger) NewLogger(name ...string) (Logger, error) {
+	return NewLogger(l.logger.NewLogger(name...))
+}
+
+// NewLogger creates a logger wrapper
+func NewLogger(loggerBase Logger, err error) (Logger, error) {
+	if err != nil {
+		return nil, err
+	}
+	// Check if logger is wrapped by us
+	if loggerWrap, ok := loggerBase.(*logger); ok {
+		return &logger{
+			logger: loggerWrap.logger,
+		}, err
+	}
+	// Assuming loggerBase is not wrapped
+	return &logger{
+		logger: loggerBase,
+	}, err
 }

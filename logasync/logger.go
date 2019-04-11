@@ -20,7 +20,7 @@
 package logasync
 
 import (
-	"fmt"
+	"strings"
 	"time"
 
 	"github.com/UtopicSoftware/logging"
@@ -31,25 +31,25 @@ type logger struct {
 	factory *loggerFactory
 }
 
-func (l *logger) Logger(name string) logging.Logger {
-	return l.factory.Logger(fmt.Sprintf(l.factory.cfg.NamingPattern, l.name, name))
+func (l *logger) NewLogger(name ...string) (logging.Logger, error) {
+	return l.factory.NewLogger(strings.Join([]string{l.name, strings.Join(name, l.factory.cfg.NamingDelimiter)}, l.factory.cfg.NamingDelimiter))
 }
 
-func (l *logger) Trace(arg ...interface{}) {
-	l.factory.accept(&loggerMessage{
-		level: logging.TRACE,
-		ts:    time.Now(),
-		name:  l.name,
-		args:  &arg,
-	})
+func (l *logger) Log(level logging.Level, arg ...interface{}) {
+	l.log(level, nil, arg...)
 }
 
-func (l *logger) Tracef(pattern string, arg ...interface{}) {
+func (l *logger) Logf(level logging.Level, pattern string, arg ...interface{}) {
+	l.log(level, &pattern, arg...)
+}
+
+func (l *logger) log(level logging.Level, pattern *string, arg ...interface{}) {
+	t := time.Now()
 	l.factory.accept(&loggerMessage{
-		level:   logging.TRACE,
-		ts:      time.Now(),
+		level:   level,
+		ts:      t,
 		name:    l.name,
-		pattern: &pattern,
+		pattern: pattern,
 		args:    &arg,
-	})
+	}, 4)
 }
