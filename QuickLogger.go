@@ -47,7 +47,7 @@ type QuickLoggerProvider interface {
 }
 
 type quickLogger struct {
-	logger Logger
+	Logger
 }
 
 // NewQuickLogger creates new QuickLogger wrapper for Logger
@@ -58,97 +58,97 @@ func NewQuickLogger(loggerBase Logger, err error) (QuickLogger, error) {
 	// Check if logger is wrapped by logging.logger
 	if loggerWrap, ok := loggerBase.(*logger); ok {
 		return &quickLogger{
-			logger: loggerWrap.logger,
+			loggerWrap.Logger,
 		}, err
 	} else
 	// Check if logger is wrapped by us
 	if loggerWrap, ok := loggerBase.(*quickLogger); ok {
 		return &quickLogger{
-			logger: loggerWrap.logger,
+			loggerWrap.Logger,
 		}, err
 	}
 	// Assuming loggerBase is not wrapped
 	return &quickLogger{
-		logger: loggerBase,
+		loggerBase,
 	}, err
 }
 
 func (l *quickLogger) NewQuickLogger(name ...string) (QuickLogger, error) {
-	return NewQuickLogger(l.logger.NewLogger(name...))
+	return NewQuickLogger(l.Logger.NewLogger(name...))
 }
 
 func (l *quickLogger) NewLogger(name ...string) (Logger, error) {
-	return NewLogger(l.logger.NewLogger(name...))
+	return NewLogger(l.Logger.NewLogger(name...))
 }
 
 func (l *quickLogger) Log(level Level, arg ...interface{}) {
-	l.logger.Log(level, arg...)
+	l.Logger.Log(level, arg...)
 }
 
 func (l *quickLogger) Fatal(arg ...interface{}) {
-	l.logger.Log(FATAL, arg...)
+	l.Logger.Log(FATAL, arg...)
 }
 
 func (l *quickLogger) Error(arg ...interface{}) {
-	l.logger.Log(ERROR, arg...)
+	l.Logger.Log(ERROR, arg...)
 }
 
 func (l *quickLogger) Warn(arg ...interface{}) {
-	l.logger.Log(WARN, arg...)
+	l.Logger.Log(WARN, arg...)
 }
 
 func (l *quickLogger) Info(arg ...interface{}) {
-	l.logger.Log(INFO, arg...)
+	l.Logger.Log(INFO, arg...)
 }
 
 func (l *quickLogger) Debug(arg ...interface{}) {
-	l.logger.Log(DEBUG, arg...)
+	l.Logger.Log(DEBUG, arg...)
 }
 
 func (l *quickLogger) Trace(arg ...interface{}) {
-	l.logger.Log(TRACE, arg...)
+	l.Logger.Log(TRACE, arg...)
 }
 
 func (l *quickLogger) Tracee(arg ...interface{}) {
-	l.logger.Log(TRACEE, arg...)
+	l.Logger.Log(TRACEE, arg...)
 }
 
 func (l *quickLogger) Traceee(arg ...interface{}) {
-	l.logger.Log(TRACEEE, arg...)
+	l.Logger.Log(TRACEEE, arg...)
 }
 
 func (l *quickLogger) Logf(level Level, pattern string, arg ...interface{}) {
-	l.logger.Logf(level, pattern, arg...)
+	l.Logger.Logf(level, pattern, arg...)
 }
 
 func (l *quickLogger) Fatalf(pattern string, arg ...interface{}) {
-	l.logger.Logf(FATAL, pattern, arg...)
+	l.Logger.Logf(FATAL, pattern, arg...)
 }
 
 func (l *quickLogger) Errorf(pattern string, arg ...interface{}) {
-	l.logger.Logf(ERROR, pattern, arg...)
+	l.Logger.Logf(ERROR, pattern, arg...)
 }
 
 func (l *quickLogger) Warnf(pattern string, arg ...interface{}) {
-	l.logger.Logf(WARN, pattern, arg...)
+	l.Logger.Logf(WARN, pattern, arg...)
 }
 
 func (l *quickLogger) Infof(pattern string, arg ...interface{}) {
-	l.logger.Logf(INFO, pattern, arg...)
+	l.Logger.Logf(INFO, pattern, arg...)
 }
 
 func (l *quickLogger) Debugf(pattern string, arg ...interface{}) {
-	l.logger.Logf(DEBUG, pattern, arg...)
+	l.Logger.Logf(DEBUG, pattern, arg...)
 }
 
 func (l *quickLogger) Tracef(pattern string, arg ...interface{}) {
-	l.logger.Logf(TRACE, pattern, arg...)
+	l.Logger.Logf(TRACE, pattern, arg...)
 }
 
 func (l *quickLogger) Traceef(pattern string, arg ...interface{}) {
-	l.logger.Logf(TRACEE, pattern, arg...)
+	l.Logger.Logf(TRACEE, pattern, arg...)
 }
 
 func (l *quickLogger) Traceeef(pattern string, arg ...interface{}) {
-	l.logger.Logf(TRACEEE, pattern, arg...)
+	l.Logger.Logf(TRACEEE, pattern, arg...)
 }

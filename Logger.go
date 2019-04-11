@@ -87,19 +87,19 @@ func (l Level) String() string {
 }
 
 type logger struct {
-	logger Logger
+	Logger
 }
 
 func (l *logger) Log(level Level, arg ...interface{}) {
-	l.logger.Log(level, arg...)
+	l.Logger.Log(level, arg...)
 }
 
 func (l *logger) Logf(level Level, pattern string, arg ...interface{}) {
-	l.logger.Logf(level, pattern, arg...)
+	l.Logger.Logf(level, pattern, arg...)
 }
 
 func (l *logger) NewLogger(name ...string) (Logger, error) {
-	return NewLogger(l.logger.NewLogger(name...))
+	return NewLogger(l.Logger.NewLogger(name...))
 }
 
 // NewLogger creates a logger wrapper
@@ -110,11 +110,11 @@ func NewLogger(loggerBase Logger, err error) (Logger, error) {
 	// Check if logger is wrapped by us
 	if loggerWrap, ok := loggerBase.(*logger); ok {
 		return &logger{
-			logger: loggerWrap.logger,
+			loggerWrap.Logger,
 		}, err
 	}
 	// Assuming loggerBase is not wrapped
 	return &logger{
-		logger: loggerBase,
+		loggerBase,
 	}, err
 }
